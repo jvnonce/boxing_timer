@@ -1,0 +1,41 @@
+# OS & editors
+.DS_Store
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+
+# Dart & Flutter
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+/build/
+/coverage/
+
+# Android
+**/android/local.properties
+**/android/**/.gradle/
+**/android/captures/
+**/android/key.properties
+*.jks
+*.keystore
+/android/app/debug
+/android/app/profile
+/android/app/release
+
+# iOS / macOS
+**/ios/Pods/
+**/ios/.symlinks/
+**/ios/Flutter/ephemeral/
+**/ios/Flutter/Flutter.podspec
+**/macos/Flutter/ephemeral/
+
+# Desktop
+**/linux/flutter/ephemeral/
+**/windows/flutter/ephemeral/
+
+# Symbolication & obfuscation outputs
+app.*.symbols
+app.*.map.json

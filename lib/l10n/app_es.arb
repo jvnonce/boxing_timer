@@ -1,0 +1,17 @@
+{
+  "@@locale": "es",
+  "appTitle": "Temporizador de boxeo",
+  "timers": "Temporizadores",
+  "run": "Sesión",
+  "start": "Iniciar",
+  "pause": "Pausa",
+  "stop": "Detener",
+  "classicBoxing": "Boxeo clásico",
+  "amateurBoxing": "Boxeo amateur",
+  "workTime": "Trabajo: {time}",
+  "restTime": "Descanso: {time}",
+  "prepareTime": "Preparación: {time}",
+  "round": "Asalto: {number} / {count}",
+  "skipToRest": "Al descanso",
+  "skipToNextRound": "Siguiente asalto"
+}

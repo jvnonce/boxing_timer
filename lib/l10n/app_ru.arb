@@ -1,0 +1,17 @@
+{
+  "@@locale": "ru",
+  "appTitle": "Таймер боксёра",
+  "timers": "Таймеры",
+  "run": "Запуск",
+  "start": "Старт",
+  "pause": "Пауза",
+  "stop": "Стоп",
+  "classicBoxing": "Классический бокс",
+  "amateurBoxing": "Любительский бокс",
+  "workTime": "Работа: {time}",
+  "restTime": "Отдых: {time}",
+  "prepareTime": "Подготовка: {time}",
+  "round": "Раунд: {number} / {count}",
+  "skipToRest": "К отдыху",
+  "skipToNextRound": "След. раунд"
+}

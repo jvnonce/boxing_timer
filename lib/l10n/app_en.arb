@@ -1,0 +1,87 @@
+{
+  "@@locale": "en",
+  "appTitle": "Boxer's timer",
+  "@appTitle": {
+    "description": "App's title"
+  },
+  "timers": "Timers",
+  "@timers": {
+    "description": "Timers page"
+  },
+  "run": "Run",
+  "@run": {
+    "description": "Run page"
+  },
+  "start": "Start",
+  "@start": {
+    "description": "Start action"
+  },
+  "pause": "Pause",
+  "@pause": {
+    "description": "Pause action"
+  },
+  "stop": "Stop",
+  "@stop": {
+    "description": "Stop action"
+  },
+  "classicBoxing": "Classic boxing",
+  "@classicBoxing": {
+    "description": "Classic boxing"
+  },
+  "amateurBoxing": "Amateur boxing",
+  "@amateurBoxing": {
+    "description": "Amateur boxing"
+  },
+  "workTime": "Work: {time}",
+  "@workTime": {
+    "description": "Work time",
+    "placeholders": {
+      "time": {
+        "type": "String",
+        "example": "05:00"
+      }
+    }
+  },
+  "restTime": "Rest: {time}",
+  "@restTime": {
+    "description": "Rest time",
+    "placeholders": {
+      "time": {
+        "type": "String",
+        "example": "01:00"
+      }
+    }
+  },
+  "prepareTime": "Prepare: {time}",
+  "@prepareTime": {
+    "description": "Prepare time",
+    "placeholders": {
+      "time": {
+        "type": "String",
+        "example": "00:10"
+      }
+    }
+  },
+  "round": "Round: {number} / {count}",
+  "@round": {
+    "description": "Round number",
+    "placeholders": {
+      "number": {
+        "type": "int",
+        "example": "1"
+      },
+      "count": {
+        "type": "int",
+        "example": "12"
+      }
+    }
+  },
+  "skipToRest": "Skip to rest",
+  "@skipToRest": {
+    "description": "Force transition from work to rest"
+  },
+  "skipToNextRound": "Next round",
+  "@skipToNextRound": {
+    "description": "Skip to the next round"
+  }
+}
