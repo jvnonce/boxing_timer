@@ -18,6 +18,11 @@ class AppLocalizationsEs extends AppLocalizations {
   String get run => 'Sesión';
 
   @override
+  String wait(String time) {
+    return 'Prepararse: $time';
+  }
+
+  @override
   String get start => 'Iniciar';
 
   @override

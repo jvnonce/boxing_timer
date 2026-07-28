@@ -118,6 +118,12 @@ abstract class AppLocalizations {
   /// **'Run'**
   String get run;
 
+  /// Waiting for run
+  ///
+  /// In en, this message translates to:
+  /// **'Get ready: {time}'**
+  String wait(String time);
+
   /// Start action
   ///
   /// In en, this message translates to:

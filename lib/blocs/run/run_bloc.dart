@@ -7,6 +7,7 @@ import 'package:boxing_timer/services/match_background_service.dart';
 import 'package:flutter/foundation.dart';
 
 part 'run_event.dart';
+
 part 'run_state.dart';
 
 class RunBloc extends Bloc<RunEvent, RunState> {
@@ -18,6 +19,7 @@ class RunBloc extends Bloc<RunEvent, RunState> {
           previewSeconds: match.delay > 0
               ? match.delay
               : match.rounds.first.work,
+          roundsCount: match.roundsCount,
         ),
       ) {
     on<RunStartEvent>(_onStart);
@@ -155,11 +157,7 @@ class RunBloc extends Bloc<RunEvent, RunState> {
     final delay = _match.delay;
     if (delay > 0) {
       emit(
-        _running(
-          roundIndex: 0,
-          phase: RunPhase.delay,
-          remainingSeconds: delay,
-        ),
+        _running(roundIndex: 0, phase: RunPhase.delay, remainingSeconds: delay),
       );
     } else {
       emit(
@@ -223,9 +221,7 @@ class RunBloc extends Bloc<RunEvent, RunState> {
         phase: current.phase,
         remainingSeconds: current.remainingSeconds - 1,
       );
-      emit(
-        nextState,
-      );
+      emit(nextState);
       _playWarningCueIfNeeded(current, nextState);
       unawaited(_syncBackgroundService(state, isPaused: false));
       return;

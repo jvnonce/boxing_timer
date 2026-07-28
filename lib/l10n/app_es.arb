@@ -2,6 +2,7 @@
   "@@locale": "es",
   "appTitle": "Temporizador de boxeo",
   "timers": "Temporizadores",
+  "wait": "Prepararse: {time}",
   "run": "Sesión",
   "start": "Iniciar",
   "pause": "Pausa",

@@ -102,15 +102,6 @@ class _RunViewState extends State<_RunView> {
     };
   }
 
-  String _timeLabel(BuildContext context, RunPhase phase, int seconds) {
-    final time = seconds.timeMinSecs;
-    return switch (phase) {
-      RunPhase.delay => time,
-      RunPhase.work => context.l10n.workTime(time),
-      RunPhase.rest => context.l10n.restTime(time),
-    };
-  }
-
   void _leave(BuildContext context) {
     if (Navigator.of(context).canPop()) {
       Navigator.of(context).pop();
@@ -183,11 +174,7 @@ class _RunViewState extends State<_RunView> {
                               ),
                             ),
                             const SizedBox(height: 8),
-                            _TimerLabel(
-                              state: state,
-                              timeLabel: _timeLabel,
-                              textColor: textColor,
-                            ),
+                            _TimerLabel(state: state, textColor: textColor),
                             const SizedBox(height: 8),
                             _PhaseSkipControls(
                               state: state,
@@ -217,22 +204,19 @@ class _Controls extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final iconSize = size * 0.55;
-    final runningIconSize = size * 0.45;
+    final iconSize = size * 0.5;
 
     return switch (state) {
       RunIdleState() => IconButton(
         iconSize: iconSize,
         padding: EdgeInsets.zero,
-        constraints: BoxConstraints.tightFor(width: size, height: size),
-        icon: const Icon(Icons.play_circle),
+        icon: Icon(Icons.play_circle),
         tooltip: context.l10n.start,
         onPressed: () => context.read<RunBloc>().add(const RunStartEvent()),
       ),
       RunRunningState() => IconButton(
-        iconSize: runningIconSize,
+        iconSize: iconSize,
         padding: EdgeInsets.zero,
-        constraints: BoxConstraints.tightFor(width: size, height: size),
         icon: const Icon(Icons.pause_circle),
         tooltip: context.l10n.pause,
         onPressed: () => context.read<RunBloc>().add(const RunPauseEvent()),
@@ -242,24 +226,16 @@ class _Controls extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           IconButton(
-            iconSize: runningIconSize,
+            iconSize: iconSize,
             padding: EdgeInsets.zero,
-            constraints: BoxConstraints.tightFor(
-              width: size * 0.5,
-              height: size,
-            ),
             icon: const Icon(Icons.play_circle),
             tooltip: context.l10n.start,
             onPressed: () =>
                 context.read<RunBloc>().add(const RunResumeEvent()),
           ),
           IconButton(
-            iconSize: runningIconSize,
+            iconSize: iconSize,
             padding: EdgeInsets.zero,
-            constraints: BoxConstraints.tightFor(
-              width: size * 0.5,
-              height: size,
-            ),
             icon: const Icon(Icons.stop_circle),
             tooltip: context.l10n.stop,
             onPressed: () => context.read<RunBloc>().add(const RunStopEvent()),
@@ -272,24 +248,34 @@ class _Controls extends StatelessWidget {
 }
 
 class _TimerLabel extends StatelessWidget {
-  const _TimerLabel({
-    required this.state,
-    required this.timeLabel,
-    required this.textColor,
-  });
+  const _TimerLabel({required this.state, required this.textColor});
 
   final RunState state;
-  final String Function(BuildContext, RunPhase, int) timeLabel;
   final Color textColor;
+
+  String _timeLabel(BuildContext context, RunPhase phase, int seconds) {
+    final time = seconds.timeMinSecs;
+    return switch (phase) {
+      RunPhase.delay => context.l10n.wait(time),
+      RunPhase.work => context.l10n.workTime(time),
+      RunPhase.rest => context.l10n.restTime(time),
+    };
+  }
 
   @override
   Widget build(BuildContext context) {
     final style = TextStyle(fontSize: 48, color: textColor);
 
     return switch (state) {
-      RunIdleState(:final previewSeconds) => Text(
-        previewSeconds.timeMinSecs,
-        style: style,
+      RunIdleState(:final previewSeconds, :final roundsCount) => Column(
+        children: [
+          Text(
+            context.l10n.roundsCount(roundsCount),
+            style: style.copyWith(fontSize: 32),
+          ),
+          const SizedBox(height: 4),
+          Text(context.l10n.wait(previewSeconds.timeMinSecs), style: style),
+        ],
       ),
       RunRunningState(
         :final phase,
@@ -304,12 +290,18 @@ class _TimerLabel extends StatelessWidget {
         :final roundsCount,
       ) => Column(
         children: [
+          if (phase == RunPhase.delay)
+            Text(
+              context.l10n.roundsCount(roundsCount),
+              style: style.copyWith(fontSize: 32),
+            ),
           if (phase != RunPhase.delay)
             Text(
               context.l10n.round(roundIndex + 1, roundsCount),
-              style: style.copyWith(fontSize: 24),
+              style: style.copyWith(fontSize: 32),
             ),
-          Text(timeLabel(context, phase, remainingSeconds), style: style),
+          const SizedBox(height: 4),
+          Text(_timeLabel(context, phase, remainingSeconds), style: style),
         ],
       ),
       RunFinishedState() || RunStoppedState() => const SizedBox.shrink(),

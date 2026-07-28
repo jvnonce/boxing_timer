@@ -18,6 +18,11 @@ class AppLocalizationsRu extends AppLocalizations {
   String get run => 'Запуск';
 
   @override
+  String wait(String time) {
+    return 'Приготовьтесь: $time';
+  }
+
+  @override
   String get start => 'Старт';
 
   @override

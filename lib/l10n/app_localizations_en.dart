@@ -18,6 +18,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get run => 'Run';
 
   @override
+  String wait(String time) {
+    return 'Get ready: $time';
+  }
+
+  @override
   String get start => 'Start';
 
   @override

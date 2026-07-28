@@ -12,6 +12,16 @@
   "@run": {
     "description": "Run page"
   },
+  "wait": "Get ready: {time}",
+  "@wait": {
+    "description": "Waiting for run",
+    "placeholders": {
+      "time": {
+        "type": "String",
+        "example": "05:00"
+      }
+    }
+  },
   "start": "Start",
   "@start": {
     "description": "Start action"

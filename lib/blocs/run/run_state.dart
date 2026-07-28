@@ -9,8 +9,9 @@ sealed class RunState {
 
 final class RunIdleState extends RunState {
   final int previewSeconds;
+  final int roundsCount;
 
-  const RunIdleState({required this.previewSeconds});
+  const RunIdleState({required this.previewSeconds, required this.roundsCount});
 }
 
 final class RunRunningState extends RunState {
