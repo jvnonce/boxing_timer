@@ -22,8 +22,8 @@ void _matchBackgroundOnStart(ServiceInstance service) {
 
   updateSubscription = service.on(MatchBackgroundService._updateAction).listen((event) {
     final l10n = _matchBackgroundLookupL10n();
-    final matchName = event?['matchName'] as String? ?? 'Boxer timer';
-    final phaseLabel = event?['phaseLabel'] as String? ?? 'Round';
+    final matchName = event?['matchName'] as String? ?? l10n.defaultMatchName;
+    final phaseLabel = event?['phaseLabel'] as String? ?? 'work';
     final remainingSeconds = event?['remainingSeconds'] as int? ?? 0;
     final roundIndex = event?['roundIndex'] as int? ?? 0;
     final roundsCount = event?['roundsCount'] as int? ?? 0;
@@ -34,8 +34,8 @@ void _matchBackgroundOnStart(ServiceInstance service) {
         : l10n.run;
     final time = _matchBackgroundFormatTime(remainingSeconds);
     final phaseTimeLabel = switch (phaseLabel) {
-      'Prepare' => l10n.prepareTime(time),
-      'Rest' => l10n.restTime(time),
+      'prepare' => l10n.prepareTime(time),
+      'rest' => l10n.restTime(time),
       _ => l10n.workTime(time),
     };
     final pausedLabel = isPaused ? ' | ${l10n.pause}' : '';
@@ -113,6 +113,7 @@ class MatchBackgroundService {
       await _ensureAndroidNotificationChannel();
     }
 
+    final l10n = _matchBackgroundLookupL10n();
     final service = FlutterBackgroundService();
 
     await service.configure(
@@ -127,8 +128,8 @@ class MatchBackgroundService {
         isForegroundMode: true,
         autoStartOnBoot: false,
         notificationChannelId: notificationChannelId,
-        initialNotificationTitle: 'Boxer timer',
-        initialNotificationContent: 'Match not running',
+        initialNotificationTitle: l10n.notificationInitialTitle,
+        initialNotificationContent: l10n.notificationInitialContent,
         foregroundServiceNotificationId: notificationId,
       ),
     );
@@ -136,10 +137,11 @@ class MatchBackgroundService {
   }
 
   static Future<void> _ensureAndroidNotificationChannel() async {
-    const channel = AndroidNotificationChannel(
+    final l10n = _matchBackgroundLookupL10n();
+    final channel = AndroidNotificationChannel(
       notificationChannelId,
-      'Boxing timer',
-      description: 'Round timer status while a match is running',
+      l10n.notificationChannelName,
+      description: l10n.notificationChannelDescription,
       importance: Importance.low,
     );
 

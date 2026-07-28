@@ -76,6 +76,16 @@
       }
     }
   },
+  "roundsCount": "Rounds: {count}",
+  "@roundsCount": {
+    "description": "Rounds count",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "12"
+      }
+    }
+  },
   "skipToRest": "Skip to rest",
   "@skipToRest": {
     "description": "Force transition from work to rest"
@@ -83,5 +93,151 @@
   "skipToNextRound": "Next round",
   "@skipToNextRound": {
     "description": "Skip to the next round"
+  },
+  "deleteMatch": "Delete match",
+  "@deleteMatch": {
+    "description": "Delete match dialog title"
+  },
+  "deleteMatchConfirm": "Delete \"{name}\"?",
+  "@deleteMatchConfirm": {
+    "description": "Delete match confirmation",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Amateur boxing"
+      }
+    }
+  },
+  "cancel": "Cancel",
+  "@cancel": {
+    "description": "Cancel action"
+  },
+  "delete": "Delete",
+  "@delete": {
+    "description": "Delete action"
+  },
+  "editMatch": "Edit match",
+  "@editMatch": {
+    "description": "Edit match action"
+  },
+  "addMatch": "Add match",
+  "@addMatch": {
+    "description": "Add match screen title"
+  },
+  "save": "Save",
+  "@save": {
+    "description": "Save action"
+  },
+  "fieldName": "Name",
+  "@fieldName": {
+    "description": "Match name field"
+  },
+  "fieldRoundsCount": "Rounds count",
+  "@fieldRoundsCount": {
+    "description": "Number of rounds field"
+  },
+  "fieldWorkSeconds": "Work seconds",
+  "@fieldWorkSeconds": {
+    "description": "Work interval field"
+  },
+  "fieldRestSeconds": "Rest seconds",
+  "@fieldRestSeconds": {
+    "description": "Rest interval field"
+  },
+  "fieldDelaySeconds": "Start delay seconds",
+  "@fieldDelaySeconds": {
+    "description": "Start delay field"
+  },
+  "fieldWarnWorkOptional": "Warn work seconds (optional)",
+  "@fieldWarnWorkOptional": {
+    "description": "Work warning threshold field"
+  },
+  "fieldWarnRestOptional": "Warn rest seconds (optional)",
+  "@fieldWarnRestOptional": {
+    "description": "Rest warning threshold field"
+  },
+  "keepScreenOn": "Keep screen on during match",
+  "@keepScreenOn": {
+    "description": "Wakelock toggle"
+  },
+  "fieldImage": "Image",
+  "@fieldImage": {
+    "description": "Match icon field"
+  },
+  "fieldRoundStartSound": "Round start sound",
+  "@fieldRoundStartSound": {
+    "description": "Round start sound field"
+  },
+  "fieldRoundEndSound": "Round end sound",
+  "@fieldRoundEndSound": {
+    "description": "Round end sound field"
+  },
+  "fieldWarningSound": "Warning sound",
+  "@fieldWarningSound": {
+    "description": "Warning sound field"
+  },
+  "validationRequired": "Required",
+  "@validationRequired": {
+    "description": "Required field validation"
+  },
+  "validationPositiveInt": "Use a value > 0",
+  "@validationPositiveInt": {
+    "description": "Positive integer validation"
+  },
+  "validationNonNegativeInt": "Use a value >= 0",
+  "@validationNonNegativeInt": {
+    "description": "Non-negative integer validation"
+  },
+  "validationWarnWorkMax": "At most half of work seconds ({work})",
+  "@validationWarnWorkMax": {
+    "description": "Warn work max validation",
+    "placeholders": {
+      "work": {
+        "type": "int",
+        "example": "180"
+      }
+    }
+  },
+  "validationWarnRestMax": "At most half of rest seconds ({rest})",
+  "@validationWarnRestMax": {
+    "description": "Warn rest max validation",
+    "placeholders": {
+      "rest": {
+        "type": "int",
+        "example": "60"
+      }
+    }
+  },
+  "mma": "MMA",
+  "@mma": {
+    "description": "MMA preset name"
+  },
+  "kickboxingAmateur": "Kickboxing amateur",
+  "@kickboxingAmateur": {
+    "description": "Kickboxing amateur preset"
+  },
+  "kickboxingClassic": "Kickboxing classic",
+  "@kickboxingClassic": {
+    "description": "Kickboxing classic preset"
+  },
+  "notificationChannelName": "Boxing timer",
+  "@notificationChannelName": {
+    "description": "Android notification channel name"
+  },
+  "notificationChannelDescription": "Round timer status while a match is running",
+  "@notificationChannelDescription": {
+    "description": "Android notification channel description"
+  },
+  "notificationInitialTitle": "Boxing timer",
+  "@notificationInitialTitle": {
+    "description": "Background service notification title before match"
+  },
+  "notificationInitialContent": "Match not running",
+  "@notificationInitialContent": {
+    "description": "Background service notification body before match"
+  },
+  "defaultMatchName": "Boxing timer",
+  "@defaultMatchName": {
+    "description": "Fallback match name in notifications"
   }
 }

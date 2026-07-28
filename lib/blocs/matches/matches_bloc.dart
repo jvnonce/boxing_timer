@@ -1,6 +1,8 @@
 import 'dart:convert';
+import 'dart:ui';
 
 import 'package:bloc/bloc.dart';
+import 'package:boxing_timer/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:boxing_timer/models/match.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -16,10 +18,11 @@ class MatchesBloc extends Bloc<MatchesEvent, MatchesState> {
 
       SharedPreferences preferences = await SharedPreferences.getInstance();
       bool isFirstRun = preferences.getBool('isFirstRun') ?? true;
+      final l10n = _lookupL10n();
 
       List<Match> list;
       if (isFirstRun) {
-        list = Match.defaultPresets();
+        list = Match.defaultPresets(l10n);
       } else {
         try {
           final source = preferences.getString('items');
@@ -43,7 +46,7 @@ class MatchesBloc extends Bloc<MatchesEvent, MatchesState> {
             throw Exception();
           }
         } catch (_) {
-          list = Match.defaultPresets();
+          list = Match.defaultPresets(l10n);
         }
       }
 
@@ -71,5 +74,13 @@ class MatchesBloc extends Bloc<MatchesEvent, MatchesState> {
       'items',
       jsonEncode(matches.map((match) => match.toJson()).toList()),
     );
+  }
+
+  static AppLocalizations _lookupL10n() {
+    try {
+      return lookupAppLocalizations(PlatformDispatcher.instance.locale);
+    } catch (_) {
+      return lookupAppLocalizations(const Locale('en'));
+    }
   }
 }

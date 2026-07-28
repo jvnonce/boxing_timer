@@ -1,3 +1,4 @@
+import 'package:boxing_timer/l10n/l10n.dart';
 import 'package:boxing_timer/models/match.dart';
 import 'package:boxing_timer/models/round.dart';
 import 'package:flutter/material.dart';
@@ -122,65 +123,53 @@ class _MatchEditorPageState extends State<MatchEditorPage> {
     return _nonNegativeInt(value.trim());
   }
 
-  String? _requiredText(String? value) {
+  String? _requiredText(String? value, AppLocalizations l10n) {
     if (value == null || value.trim().isEmpty) {
-      return 'Required';
+      return l10n.validationRequired;
     }
     return null;
   }
 
-  String? _requiredPositiveValidator(String? value) {
+  String? _requiredPositiveValidator(String? value, AppLocalizations l10n) {
     if (_requiredPositiveInt(value) == null) {
-      return 'Use a value > 0';
+      return l10n.validationPositiveInt;
     }
     return null;
   }
 
-  String? _nonNegativeValidator(String? value) {
+  String? _nonNegativeValidator(String? value, AppLocalizations l10n) {
     if (_nonNegativeInt(value) == null) {
-      return 'Use a value >= 0';
+      return l10n.validationNonNegativeInt;
     }
     return null;
   }
 
-  String? _optionalNonNegativeValidator(String? value) {
+  String? _warnWorkValidator(String? value, AppLocalizations l10n) {
     if (value == null || value.trim().isEmpty) {
       return null;
     }
-    if (_optionalNonNegativeInt(value) == null) {
-      return 'Use a value >= 0';
+    final parsed = int.tryParse(value.trim());
+    if (parsed == null || parsed < 0) {
+      return l10n.validationNonNegativeInt;
     }
-    return null;
-  }
-
-  String? _warnWorkValidator(String? value) {
-    final base = _optionalNonNegativeValidator(value);
-    if (base != null) {
-      return base;
-    }
-    if (value == null || value.trim().isEmpty) {
-      return null;
-    }
-    final warn = int.tryParse(value.trim());
     final work = _requiredPositiveInt(_workController.text);
-    if (warn != null && work != null && warn > work ~/ 2) {
-      return 'At most half of work seconds ($work)';
+    if (work != null && parsed > work ~/ 2) {
+      return l10n.validationWarnWorkMax(work);
     }
     return null;
   }
 
-  String? _warnRestValidator(String? value) {
-    final base = _optionalNonNegativeValidator(value);
-    if (base != null) {
-      return base;
-    }
+  String? _warnRestValidator(String? value, AppLocalizations l10n) {
     if (value == null || value.trim().isEmpty) {
       return null;
     }
-    final warn = int.tryParse(value.trim());
+    final parsed = int.tryParse(value.trim());
+    if (parsed == null || parsed < 0) {
+      return l10n.validationNonNegativeInt;
+    }
     final rest = _nonNegativeInt(_restController.text);
-    if (warn != null && rest != null && warn > rest ~/ 2) {
-      return 'At most half of rest seconds ($rest)';
+    if (rest != null && parsed > rest ~/ 2) {
+      return l10n.validationWarnRestMax(rest);
     }
     return null;
   }
@@ -220,13 +209,15 @@ class _MatchEditorPageState extends State<MatchEditorPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(_isEditing ? 'Edit match' : 'Add match'),
+        title: Text(_isEditing ? l10n.editMatch : l10n.addMatch),
         actions: [
           TextButton(
             onPressed: _save,
-            child: const Text('Save'),
+            child: Text(l10n.save),
           ),
         ],
       ),
@@ -234,60 +225,63 @@ class _MatchEditorPageState extends State<MatchEditorPage> {
         padding: const EdgeInsets.all(16),
         child: Form(
           key: _formKey,
+          autovalidateMode: AutovalidateMode.disabled,
           child: Column(
             children: [
               TextFormField(
                 controller: _nameController,
-                decoration: const InputDecoration(labelText: 'Name'),
-                validator: _requiredText,
+                decoration: InputDecoration(labelText: l10n.fieldName),
+                validator: (value) => _requiredText(value, l10n),
               ),
               const SizedBox(height: 12),
               TextFormField(
                 controller: _roundsCountController,
-                decoration: const InputDecoration(labelText: 'Rounds count'),
+                decoration: InputDecoration(labelText: l10n.fieldRoundsCount),
                 keyboardType: TextInputType.number,
-                validator: _requiredPositiveValidator,
+                validator: (value) => _requiredPositiveValidator(value, l10n),
               ),
               const SizedBox(height: 12),
               TextFormField(
                 controller: _workController,
-                decoration: const InputDecoration(labelText: 'Work seconds'),
+                decoration: InputDecoration(labelText: l10n.fieldWorkSeconds),
                 keyboardType: TextInputType.number,
-                validator: _requiredPositiveValidator,
-                onChanged: (_) => _formKey.currentState?.validate(),
+                validator: (value) => _requiredPositiveValidator(value, l10n),
               ),
               const SizedBox(height: 12),
               TextFormField(
                 controller: _restController,
-                decoration: const InputDecoration(labelText: 'Rest seconds'),
+                decoration: InputDecoration(labelText: l10n.fieldRestSeconds),
                 keyboardType: TextInputType.number,
-                validator: _nonNegativeValidator,
-                onChanged: (_) => _formKey.currentState?.validate(),
+                validator: (value) => _nonNegativeValidator(value, l10n),
               ),
               const SizedBox(height: 12),
               TextFormField(
                 controller: _delayController,
-                decoration: const InputDecoration(labelText: 'Start delay seconds'),
+                decoration: InputDecoration(labelText: l10n.fieldDelaySeconds),
                 keyboardType: TextInputType.number,
-                validator: _nonNegativeValidator,
+                validator: (value) => _nonNegativeValidator(value, l10n),
               ),
               const SizedBox(height: 12),
               TextFormField(
                 controller: _warnWorkController,
-                decoration: const InputDecoration(labelText: 'Warn work seconds'),
+                decoration: InputDecoration(
+                  labelText: l10n.fieldWarnWorkOptional,
+                ),
                 keyboardType: TextInputType.number,
-                validator: _warnWorkValidator,
+                validator: (value) => _warnWorkValidator(value, l10n),
               ),
               const SizedBox(height: 12),
               TextFormField(
                 controller: _warnRestController,
-                decoration: const InputDecoration(labelText: 'Warn rest seconds'),
+                decoration: InputDecoration(
+                  labelText: l10n.fieldWarnRestOptional,
+                ),
                 keyboardType: TextInputType.number,
-                validator: _warnRestValidator,
+                validator: (value) => _warnRestValidator(value, l10n),
               ),
               const SizedBox(height: 12),
               SwitchListTile(
-                title: const Text('Keep screen on during match'),
+                title: Text(l10n.keepScreenOn),
                 value: _keepScreenOn,
                 onChanged: (value) {
                   setState(() {
@@ -298,7 +292,7 @@ class _MatchEditorPageState extends State<MatchEditorPage> {
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
                 initialValue: _imageAsset,
-                decoration: const InputDecoration(labelText: 'Image'),
+                decoration: InputDecoration(labelText: l10n.fieldImage),
                 items: MatchEditorPage.imageAssets
                     .map(
                       (asset) => DropdownMenuItem<String>(
@@ -319,7 +313,7 @@ class _MatchEditorPageState extends State<MatchEditorPage> {
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
                 initialValue: _roundStartSoundAsset,
-                decoration: const InputDecoration(labelText: 'Round start sound'),
+                decoration: InputDecoration(labelText: l10n.fieldRoundStartSound),
                 items: MatchEditorPage.soundAssets
                     .map(
                       (asset) => DropdownMenuItem<String>(
@@ -340,7 +334,7 @@ class _MatchEditorPageState extends State<MatchEditorPage> {
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
                 initialValue: _roundEndSoundAsset,
-                decoration: const InputDecoration(labelText: 'Round end sound'),
+                decoration: InputDecoration(labelText: l10n.fieldRoundEndSound),
                 items: MatchEditorPage.soundAssets
                     .map(
                       (asset) => DropdownMenuItem<String>(
@@ -361,7 +355,7 @@ class _MatchEditorPageState extends State<MatchEditorPage> {
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
                 initialValue: _warningSoundAsset,
-                decoration: const InputDecoration(labelText: 'Warning sound'),
+                decoration: InputDecoration(labelText: l10n.fieldWarningSound),
                 items: MatchEditorPage.soundAssets
                     .map(
                       (asset) => DropdownMenuItem<String>(

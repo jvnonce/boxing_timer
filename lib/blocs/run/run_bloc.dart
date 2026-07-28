@@ -72,9 +72,9 @@ class RunBloc extends Bloc<RunEvent, RunState> {
 
   String _phaseLabel(RunPhase phase) {
     return switch (phase) {
-      RunPhase.delay => 'Prepare',
-      RunPhase.work => 'Work',
-      RunPhase.rest => 'Rest',
+      RunPhase.delay => 'prepare',
+      RunPhase.work => 'work',
+      RunPhase.rest => 'rest',
     };
   }
 

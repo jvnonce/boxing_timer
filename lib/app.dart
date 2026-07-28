@@ -40,6 +40,7 @@ class _AppState extends State<App> {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
+      onGenerateTitle: (context) => AppLocalizations.of(context)!.appTitle,
       theme: MaterialTheme(TextTheme()).light(),
       darkTheme: MaterialTheme(TextTheme()).dark(),
       localizationsDelegates: AppLocalizations.localizationsDelegates,

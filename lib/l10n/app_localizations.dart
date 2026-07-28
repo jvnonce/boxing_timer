@@ -172,6 +172,12 @@ abstract class AppLocalizations {
   /// **'Round: {number} / {count}'**
   String round(int number, int count);
 
+  /// Rounds count
+  ///
+  /// In en, this message translates to:
+  /// **'Rounds: {count}'**
+  String roundsCount(int count);
+
   /// Force transition from work to rest
   ///
   /// In en, this message translates to:
@@ -183,6 +189,198 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Next round'**
   String get skipToNextRound;
+
+  /// Delete match dialog title
+  ///
+  /// In en, this message translates to:
+  /// **'Delete match'**
+  String get deleteMatch;
+
+  /// Delete match confirmation
+  ///
+  /// In en, this message translates to:
+  /// **'Delete \"{name}\"?'**
+  String deleteMatchConfirm(String name);
+
+  /// Cancel action
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancel;
+
+  /// Delete action
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get delete;
+
+  /// Edit match action
+  ///
+  /// In en, this message translates to:
+  /// **'Edit match'**
+  String get editMatch;
+
+  /// Add match screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Add match'**
+  String get addMatch;
+
+  /// Save action
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get save;
+
+  /// Match name field
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get fieldName;
+
+  /// Number of rounds field
+  ///
+  /// In en, this message translates to:
+  /// **'Rounds count'**
+  String get fieldRoundsCount;
+
+  /// Work interval field
+  ///
+  /// In en, this message translates to:
+  /// **'Work seconds'**
+  String get fieldWorkSeconds;
+
+  /// Rest interval field
+  ///
+  /// In en, this message translates to:
+  /// **'Rest seconds'**
+  String get fieldRestSeconds;
+
+  /// Start delay field
+  ///
+  /// In en, this message translates to:
+  /// **'Start delay seconds'**
+  String get fieldDelaySeconds;
+
+  /// Work warning threshold field
+  ///
+  /// In en, this message translates to:
+  /// **'Warn work seconds (optional)'**
+  String get fieldWarnWorkOptional;
+
+  /// Rest warning threshold field
+  ///
+  /// In en, this message translates to:
+  /// **'Warn rest seconds (optional)'**
+  String get fieldWarnRestOptional;
+
+  /// Wakelock toggle
+  ///
+  /// In en, this message translates to:
+  /// **'Keep screen on during match'**
+  String get keepScreenOn;
+
+  /// Match icon field
+  ///
+  /// In en, this message translates to:
+  /// **'Image'**
+  String get fieldImage;
+
+  /// Round start sound field
+  ///
+  /// In en, this message translates to:
+  /// **'Round start sound'**
+  String get fieldRoundStartSound;
+
+  /// Round end sound field
+  ///
+  /// In en, this message translates to:
+  /// **'Round end sound'**
+  String get fieldRoundEndSound;
+
+  /// Warning sound field
+  ///
+  /// In en, this message translates to:
+  /// **'Warning sound'**
+  String get fieldWarningSound;
+
+  /// Required field validation
+  ///
+  /// In en, this message translates to:
+  /// **'Required'**
+  String get validationRequired;
+
+  /// Positive integer validation
+  ///
+  /// In en, this message translates to:
+  /// **'Use a value > 0'**
+  String get validationPositiveInt;
+
+  /// Non-negative integer validation
+  ///
+  /// In en, this message translates to:
+  /// **'Use a value >= 0'**
+  String get validationNonNegativeInt;
+
+  /// Warn work max validation
+  ///
+  /// In en, this message translates to:
+  /// **'At most half of work seconds ({work})'**
+  String validationWarnWorkMax(int work);
+
+  /// Warn rest max validation
+  ///
+  /// In en, this message translates to:
+  /// **'At most half of rest seconds ({rest})'**
+  String validationWarnRestMax(int rest);
+
+  /// MMA preset name
+  ///
+  /// In en, this message translates to:
+  /// **'MMA'**
+  String get mma;
+
+  /// Kickboxing amateur preset
+  ///
+  /// In en, this message translates to:
+  /// **'Kickboxing amateur'**
+  String get kickboxingAmateur;
+
+  /// Kickboxing classic preset
+  ///
+  /// In en, this message translates to:
+  /// **'Kickboxing classic'**
+  String get kickboxingClassic;
+
+  /// Android notification channel name
+  ///
+  /// In en, this message translates to:
+  /// **'Boxing timer'**
+  String get notificationChannelName;
+
+  /// Android notification channel description
+  ///
+  /// In en, this message translates to:
+  /// **'Round timer status while a match is running'**
+  String get notificationChannelDescription;
+
+  /// Background service notification title before match
+  ///
+  /// In en, this message translates to:
+  /// **'Boxing timer'**
+  String get notificationInitialTitle;
+
+  /// Background service notification body before match
+  ///
+  /// In en, this message translates to:
+  /// **'Match not running'**
+  String get notificationInitialContent;
+
+  /// Fallback match name in notifications
+  ///
+  /// In en, this message translates to:
+  /// **'Boxing timer'**
+  String get defaultMatchName;
 }
 
 class _AppLocalizationsDelegate

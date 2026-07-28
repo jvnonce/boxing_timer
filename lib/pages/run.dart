@@ -162,23 +162,40 @@ class _RunViewState extends State<_RunView> {
                     );
                     return SizedBox.square(
                       dimension: size,
-                      child: Column(
-                        mainAxisAlignment: .center,
-                        children: [
-                          _Controls(state: state, size: size),
-                          const SizedBox(height: 16),
-                          _TimerLabel(
-                            state: state,
-                            timeLabel: _timeLabel,
-                            textColor: textColor,
-                          ),
-                          const SizedBox(height: 12),
-                          _PhaseSkipControls(
-                            state: state,
-                            backgroundColor: textColor,
-                            foregroundColor: _backgroundFor(state),
-                          ),
-                        ],
+                      child: Padding(
+                        padding: const EdgeInsets.all(8),
+                        child: Column(
+                          children: [
+                            Expanded(
+                              child: LayoutBuilder(
+                                builder: (context, controlConstraints) {
+                                  final controlSize = min(
+                                    controlConstraints.maxWidth,
+                                    controlConstraints.maxHeight,
+                                  );
+                                  return Center(
+                                    child: _Controls(
+                                      state: state,
+                                      size: controlSize,
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            _TimerLabel(
+                              state: state,
+                              timeLabel: _timeLabel,
+                              textColor: textColor,
+                            ),
+                            const SizedBox(height: 8),
+                            _PhaseSkipControls(
+                              state: state,
+                              backgroundColor: textColor,
+                              foregroundColor: _backgroundFor(state),
+                            ),
+                          ],
+                        ),
                       ),
                     );
                   },
@@ -200,40 +217,50 @@ class _Controls extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final iconSize = size / 3;
+    final iconSize = size * 0.55;
+    final runningIconSize = size * 0.45;
 
     return switch (state) {
-      RunIdleState() => Row(
-        mainAxisAlignment: .center,
-        children: [
-          IconButton(
-            icon: Icon(Icons.play_circle, size: size / 2),
-            tooltip: context.l10n.start,
-            onPressed: () => context.read<RunBloc>().add(const RunStartEvent()),
-          ),
-        ],
+      RunIdleState() => IconButton(
+        iconSize: iconSize,
+        padding: EdgeInsets.zero,
+        constraints: BoxConstraints.tightFor(width: size, height: size),
+        icon: const Icon(Icons.play_circle),
+        tooltip: context.l10n.start,
+        onPressed: () => context.read<RunBloc>().add(const RunStartEvent()),
       ),
-      RunRunningState() => Row(
-        mainAxisAlignment: .center,
-        children: [
-          IconButton(
-            icon: Icon(Icons.pause_circle, size: iconSize),
-            tooltip: context.l10n.pause,
-            onPressed: () => context.read<RunBloc>().add(const RunPauseEvent()),
-          ),
-        ],
+      RunRunningState() => IconButton(
+        iconSize: runningIconSize,
+        padding: EdgeInsets.zero,
+        constraints: BoxConstraints.tightFor(width: size, height: size),
+        icon: const Icon(Icons.pause_circle),
+        tooltip: context.l10n.pause,
+        onPressed: () => context.read<RunBloc>().add(const RunPauseEvent()),
       ),
       RunPausedState() => Row(
-        mainAxisAlignment: .center,
+        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
         children: [
           IconButton(
-            icon: Icon(Icons.play_circle, size: iconSize),
+            iconSize: runningIconSize,
+            padding: EdgeInsets.zero,
+            constraints: BoxConstraints.tightFor(
+              width: size * 0.5,
+              height: size,
+            ),
+            icon: const Icon(Icons.play_circle),
             tooltip: context.l10n.start,
             onPressed: () =>
                 context.read<RunBloc>().add(const RunResumeEvent()),
           ),
           IconButton(
-            icon: Icon(Icons.stop_circle, size: iconSize),
+            iconSize: runningIconSize,
+            padding: EdgeInsets.zero,
+            constraints: BoxConstraints.tightFor(
+              width: size * 0.5,
+              height: size,
+            ),
+            icon: const Icon(Icons.stop_circle),
             tooltip: context.l10n.stop,
             onPressed: () => context.read<RunBloc>().add(const RunStopEvent()),
           ),

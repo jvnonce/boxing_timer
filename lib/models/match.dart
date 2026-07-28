@@ -1,3 +1,4 @@
+import 'package:boxing_timer/l10n/app_localizations.dart';
 import 'package:boxing_timer/models/round.dart';
 
 class Match {
@@ -112,9 +113,9 @@ class Match {
     return _intFromJson(value);
   }
 
-  static Match classicBoxing() {
+  static Match classicBoxing(String name) {
     return Match(
-      name: 'Classic boxing',
+      name: name,
       imageAsset: 'assets/svg/boxing-fighter.svg',
       defaultWork: 180,
       defaultRest: 60,
@@ -125,9 +126,9 @@ class Match {
     );
   }
 
-  static Match amateurBoxing() {
+  static Match amateurBoxing(String name) {
     return Match(
-      name: 'Amateur boxing',
+      name: name,
       imageAsset: 'assets/svg/boxing-training.svg',
       defaultWork: 120,
       defaultRest: 60,
@@ -138,9 +139,9 @@ class Match {
     );
   }
 
-  static Match mma() {
+  static Match mma(String name) {
     return Match(
-      name: 'MMA',
+      name: name,
       imageAsset: 'assets/svg/person-fight-punch.svg',
       defaultWork: 300,
       defaultRest: 60,
@@ -151,9 +152,9 @@ class Match {
     );
   }
 
-  static Match kickboxingAmateur() {
+  static Match kickboxingAmateur(String name) {
     return Match(
-      name: 'Kickboxing amateur',
+      name: name,
       imageAsset: 'assets/svg/kickboxing.svg',
       defaultWork: 120,
       defaultRest: 60,
@@ -164,9 +165,9 @@ class Match {
     );
   }
 
-  static Match kickboxingClassic() {
+  static Match kickboxingClassic(String name) {
     return Match(
-      name: 'Kickboxing classic',
+      name: name,
       imageAsset: 'assets/svg/kickboxing-high.svg',
       defaultWork: 180,
       defaultRest: 60,
@@ -177,7 +178,13 @@ class Match {
     );
   }
 
-  static List<Match> defaultPresets() {
-    return <Match>[classicBoxing(), amateurBoxing(), mma(), kickboxingAmateur(), kickboxingClassic()];
+  static List<Match> defaultPresets(AppLocalizations l10n) {
+    return <Match>[
+      classicBoxing(l10n.classicBoxing),
+      amateurBoxing(l10n.amateurBoxing),
+      mma(l10n.mma),
+      kickboxingAmateur(l10n.kickboxingAmateur),
+      kickboxingClassic(l10n.kickboxingClassic),
+    ];
   }
 }
