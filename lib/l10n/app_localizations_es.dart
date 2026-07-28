@@ -170,4 +170,26 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get defaultMatchName => 'Temporizador de boxeo';
+
+  @override
+  String get announceRounds => 'Anunciar asaltos';
+
+  @override
+  String get ttsVoiceGender => 'Voz';
+
+  @override
+  String get ttsVoiceFemale => 'Femenina';
+
+  @override
+  String get ttsVoiceMale => 'Masculina';
+
+  @override
+  String ttsRound(int number) {
+    return 'Asalto $number';
+  }
+
+  @override
+  String ttsLastRound(int number) {
+    return 'Asalto $number. Último.';
+  }
 }

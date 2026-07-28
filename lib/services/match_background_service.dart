@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:ui';
 
 import 'package:boxing_timer/l10n/app_localizations.dart';
-import 'package:boxing_timer/platform.dart';
+import 'package:boxing_timer/utils.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';

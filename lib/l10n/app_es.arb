@@ -47,5 +47,11 @@
   "notificationChannelDescription": "Estado del asalto mientras corre la sesión",
   "notificationInitialTitle": "Temporizador de boxeo",
   "notificationInitialContent": "Sesión no iniciada",
-  "defaultMatchName": "Temporizador de boxeo"
+  "defaultMatchName": "Temporizador de boxeo",
+  "announceRounds": "Anunciar asaltos",
+  "ttsVoiceGender": "Voz",
+  "ttsVoiceFemale": "Femenina",
+  "ttsVoiceMale": "Masculina",
+  "ttsRound": "Asalto {number}",
+  "ttsLastRound": "Asalto {number}. Último."
 }

@@ -249,5 +249,41 @@
   "defaultMatchName": "Boxing timer",
   "@defaultMatchName": {
     "description": "Fallback match name in notifications"
+  },
+  "announceRounds": "Announce rounds",
+  "@announceRounds": {
+    "description": "Speak round number after the start gong"
+  },
+  "ttsVoiceGender": "Voice",
+  "@ttsVoiceGender": {
+    "description": "TTS voice gender setting"
+  },
+  "ttsVoiceFemale": "Female",
+  "@ttsVoiceFemale": {
+    "description": "Female TTS voice"
+  },
+  "ttsVoiceMale": "Male",
+  "@ttsVoiceMale": {
+    "description": "Male TTS voice"
+  },
+  "ttsRound": "Round {number}",
+  "@ttsRound": {
+    "description": "Spoken round announcement",
+    "placeholders": {
+      "number": {
+        "type": "int",
+        "example": "1"
+      }
+    }
+  },
+  "ttsLastRound": "Round {number}. Last.",
+  "@ttsLastRound": {
+    "description": "Spoken last round announcement",
+    "placeholders": {
+      "number": {
+        "type": "int",
+        "example": "12"
+      }
+    }
   }
 }

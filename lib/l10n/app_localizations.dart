@@ -387,6 +387,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Boxing timer'**
   String get defaultMatchName;
+
+  /// Speak round number after the start gong
+  ///
+  /// In en, this message translates to:
+  /// **'Announce rounds'**
+  String get announceRounds;
+
+  /// TTS voice gender setting
+  ///
+  /// In en, this message translates to:
+  /// **'Voice'**
+  String get ttsVoiceGender;
+
+  /// Female TTS voice
+  ///
+  /// In en, this message translates to:
+  /// **'Female'**
+  String get ttsVoiceFemale;
+
+  /// Male TTS voice
+  ///
+  /// In en, this message translates to:
+  /// **'Male'**
+  String get ttsVoiceMale;
+
+  /// Spoken round announcement
+  ///
+  /// In en, this message translates to:
+  /// **'Round {number}'**
+  String ttsRound(int number);
+
+  /// Spoken last round announcement
+  ///
+  /// In en, this message translates to:
+  /// **'Round {number}. Last.'**
+  String ttsLastRound(int number);
 }
 
 class _AppLocalizationsDelegate

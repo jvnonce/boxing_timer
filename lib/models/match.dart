@@ -1,5 +1,6 @@
 import 'package:boxing_timer/l10n/app_localizations.dart';
 import 'package:boxing_timer/models/round.dart';
+import 'package:boxing_timer/models/tts_voice_gender.dart';
 
 class Match {
   static const String defaultImageAsset = 'assets/svg/boxing-fighter.svg';
@@ -18,6 +19,8 @@ class Match {
   final String roundEndSoundAsset;
   final String warningSoundAsset;
   final bool keepScreenOn;
+  final bool announceRounds;
+  final TtsVoiceGender ttsVoiceGender;
 
   Match({
     required this.name,
@@ -31,6 +34,8 @@ class Match {
     this.roundEndSoundAsset = defaultRoundSignalSound,
     this.warningSoundAsset = defaultWarningSound,
     this.keepScreenOn = true,
+    this.announceRounds = true,
+    this.ttsVoiceGender = TtsVoiceGender.female,
     required this.rounds,
   });
 
@@ -51,6 +56,8 @@ class Match {
       'roundEndSoundAsset': roundEndSoundAsset,
       'warningSoundAsset': warningSoundAsset,
       'keepScreenOn': keepScreenOn,
+      'announceRounds': announceRounds,
+      'ttsVoiceGender': ttsVoiceGender.toJson(),
       'rounds': rounds.map((e) => e.toJson()).toList(),
     };
   }
@@ -63,11 +70,7 @@ class Match {
       }
 
       final rounds = roundsRaw
-          .map(
-            (e) => Round.fromJson(
-              Map<String, dynamic>.from(e as Map<dynamic, dynamic>),
-            ),
-          )
+          .map((e) => Round.fromJson(Map<String, dynamic>.from(e as Map<dynamic, dynamic>)))
           .nonNulls
           .toList();
       if (rounds.isEmpty) {
@@ -82,13 +85,12 @@ class Match {
         delay: _intFromJson(map['delay']),
         warnWork: _optionalIntFromJson(map['warnWork']),
         warnRest: _optionalIntFromJson(map['warnRest']),
-        roundStartSoundAsset:
-            map['roundStartSoundAsset'] as String? ?? defaultRoundSignalSound,
-        roundEndSoundAsset:
-            map['roundEndSoundAsset'] as String? ?? defaultRoundSignalSound,
-        warningSoundAsset:
-            map['warningSoundAsset'] as String? ?? defaultWarningSound,
+        roundStartSoundAsset: map['roundStartSoundAsset'] as String? ?? defaultRoundSignalSound,
+        roundEndSoundAsset: map['roundEndSoundAsset'] as String? ?? defaultRoundSignalSound,
+        warningSoundAsset: map['warningSoundAsset'] as String? ?? defaultWarningSound,
         keepScreenOn: map['keepScreenOn'] as bool? ?? true,
+        announceRounds: map['announceRounds'] as bool? ?? false,
+        ttsVoiceGender: TtsVoiceGender.fromJson(map['ttsVoiceGender']),
         rounds: rounds,
       );
     } catch (_) {

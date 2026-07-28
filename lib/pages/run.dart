@@ -4,7 +4,6 @@ import 'dart:math';
 import 'package:boxing_timer/blocs/run/run_bloc.dart';
 import 'package:boxing_timer/l10n/l10n.dart';
 import 'package:boxing_timer/models/match.dart';
-import 'package:boxing_timer/platform.dart';
 import 'package:boxing_timer/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -65,16 +64,8 @@ class _RunViewState extends State<_RunView> {
     }
 
     final (:phase, :isPaused, :isWarning) = switch (state) {
-      RunRunningState(:final phase, :final isWarning) => (
-        phase: phase,
-        isPaused: false,
-        isWarning: isWarning,
-      ),
-      RunPausedState(:final phase, :final isWarning) => (
-        phase: phase,
-        isPaused: true,
-        isWarning: isWarning,
-      ),
+      RunRunningState(:final phase, :final isWarning) => (phase: phase, isPaused: false, isWarning: isWarning),
+      RunPausedState(:final phase, :final isWarning) => (phase: phase, isPaused: true, isWarning: isWarning),
       _ => (phase: null as RunPhase?, isPaused: false, isWarning: false),
     };
 
@@ -95,8 +86,7 @@ class _RunViewState extends State<_RunView> {
     }
 
     return switch (phase) {
-      RunPhase.work =>
-        isWarning ? Colors.green.shade900 : Colors.green.shade800,
+      RunPhase.work => isWarning ? Colors.green.shade900 : Colors.green.shade800,
       RunPhase.rest => isWarning ? Colors.red.shade900 : Colors.red.shade800,
       RunPhase.delay => Colors.blueAccent,
     };
@@ -147,10 +137,7 @@ class _RunViewState extends State<_RunView> {
               child: Center(
                 child: LayoutBuilder(
                   builder: (context, constraints) {
-                    final size = min(
-                      constraints.maxHeight,
-                      constraints.maxWidth,
-                    );
+                    final size = min(constraints.maxHeight, constraints.maxWidth);
                     return SizedBox.square(
                       dimension: size,
                       child: Padding(
@@ -160,15 +147,9 @@ class _RunViewState extends State<_RunView> {
                             Expanded(
                               child: LayoutBuilder(
                                 builder: (context, controlConstraints) {
-                                  final controlSize = min(
-                                    controlConstraints.maxWidth,
-                                    controlConstraints.maxHeight,
-                                  );
+                                  final controlSize = min(controlConstraints.maxWidth, controlConstraints.maxHeight);
                                   return Center(
-                                    child: _Controls(
-                                      state: state,
-                                      size: controlSize,
-                                    ),
+                                    child: _Controls(state: state, size: controlSize),
                                   );
                                 },
                               ),
@@ -230,8 +211,7 @@ class _Controls extends StatelessWidget {
             padding: EdgeInsets.zero,
             icon: const Icon(Icons.play_circle),
             tooltip: context.l10n.start,
-            onPressed: () =>
-                context.read<RunBloc>().add(const RunResumeEvent()),
+            onPressed: () => context.read<RunBloc>().add(const RunResumeEvent()),
           ),
           IconButton(
             iconSize: iconSize,
@@ -264,42 +244,22 @@ class _TimerLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final style = TextStyle(fontSize: 48, color: textColor);
+    final style = TextStyle(fontSize: 36, color: textColor);
 
     return switch (state) {
       RunIdleState(:final previewSeconds, :final roundsCount) => Column(
         children: [
-          Text(
-            context.l10n.roundsCount(roundsCount),
-            style: style.copyWith(fontSize: 32),
-          ),
+          Text(context.l10n.roundsCount(roundsCount), style: style.copyWith(fontSize: 32)),
           const SizedBox(height: 4),
           Text(context.l10n.wait(previewSeconds.timeMinSecs), style: style),
         ],
       ),
-      RunRunningState(
-        :final phase,
-        :final remainingSeconds,
-        :final roundIndex,
-        :final roundsCount,
-      ) ||
-      RunPausedState(
-        :final phase,
-        :final remainingSeconds,
-        :final roundIndex,
-        :final roundsCount,
-      ) => Column(
+      RunRunningState(:final phase, :final remainingSeconds, :final roundIndex, :final roundsCount) ||
+      RunPausedState(:final phase, :final remainingSeconds, :final roundIndex, :final roundsCount) => Column(
         children: [
-          if (phase == RunPhase.delay)
-            Text(
-              context.l10n.roundsCount(roundsCount),
-              style: style.copyWith(fontSize: 32),
-            ),
+          if (phase == RunPhase.delay) Text(context.l10n.roundsCount(roundsCount), style: style.copyWith(fontSize: 32)),
           if (phase != RunPhase.delay)
-            Text(
-              context.l10n.round(roundIndex + 1, roundsCount),
-              style: style.copyWith(fontSize: 32),
-            ),
+            Text(context.l10n.round(roundIndex + 1, roundsCount), style: style.copyWith(fontSize: 32)),
           const SizedBox(height: 4),
           Text(_timeLabel(context, phase, remainingSeconds), style: style),
         ],
@@ -310,11 +270,7 @@ class _TimerLabel extends StatelessWidget {
 }
 
 class _PhaseSkipControls extends StatelessWidget {
-  const _PhaseSkipControls({
-    required this.state,
-    required this.backgroundColor,
-    required this.foregroundColor,
-  });
+  const _PhaseSkipControls({required this.state, required this.backgroundColor, required this.foregroundColor});
 
   final RunState state;
   final Color backgroundColor;
@@ -335,12 +291,8 @@ class _PhaseSkipControls extends StatelessWidget {
     final bloc = context.read<RunBloc>();
 
     final style = ButtonStyle(
-      backgroundColor: WidgetStateColor.resolveWith(
-        (states) => backgroundColor,
-      ),
-      foregroundColor: WidgetStateColor.resolveWith(
-        (states) => foregroundColor,
-      ),
+      backgroundColor: WidgetStateColor.resolveWith((states) => backgroundColor),
+      foregroundColor: WidgetStateColor.resolveWith((states) => foregroundColor),
     );
 
     return Wrap(

@@ -19,7 +19,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String wait(String time) {
-    return 'Приготовьтесь: $time';
+    return 'Готовьтесь: $time';
   }
 
   @override
@@ -169,4 +169,26 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get defaultMatchName => 'Таймер боксёра';
+
+  @override
+  String get announceRounds => 'Озвучивать раунды';
+
+  @override
+  String get ttsVoiceGender => 'Голос';
+
+  @override
+  String get ttsVoiceFemale => 'Женский';
+
+  @override
+  String get ttsVoiceMale => 'Мужской';
+
+  @override
+  String ttsRound(int number) {
+    return 'Раунд $number';
+  }
+
+  @override
+  String ttsLastRound(int number) {
+    return 'Раунд $number. Последний.';
+  }
 }

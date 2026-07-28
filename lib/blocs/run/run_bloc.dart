@@ -4,6 +4,7 @@ import 'package:bloc/bloc.dart';
 import 'package:boxing_timer/models/match.dart';
 import 'package:boxing_timer/services/match_audio_service.dart';
 import 'package:boxing_timer/services/match_background_service.dart';
+import 'package:boxing_timer/services/match_tts_service.dart';
 import 'package:flutter/foundation.dart';
 
 part 'run_event.dart';
@@ -14,6 +15,7 @@ class RunBloc extends Bloc<RunEvent, RunState> {
   RunBloc({required Match match})
     : _match = match,
       _audioService = MatchAudioService(),
+      _ttsService = MatchTtsService(),
       super(
         RunIdleState(
           previewSeconds: match.delay > 0
@@ -33,8 +35,10 @@ class RunBloc extends Bloc<RunEvent, RunState> {
 
   final Match _match;
   final MatchAudioService _audioService;
+  final MatchTtsService _ttsService;
   Timer? _ticker;
   String? _warningCueKey;
+  int _roundStartGeneration = 0;
 
   void _startTicker() {
     _ticker?.cancel();
@@ -85,11 +89,52 @@ class RunBloc extends Bloc<RunEvent, RunState> {
   }
 
   void _playRoundStartCue() {
-    unawaited(_audioService.playRoundStart(_match.roundStartSoundAsset));
+    unawaited(_playRoundStartWithAnnounce());
+  }
+
+  Future<void> _playRoundStartWithAnnounce() async {
+    final generation = ++_roundStartGeneration;
+    final roundIndex = _roundIndexOf(state);
+    if (roundIndex == null) {
+      return;
+    }
+
+    final isLast = roundIndex >= _match.roundsCount - 1;
+    await _audioService.playRoundStart(
+      _match.roundStartSoundAsset,
+      waitForCompletion: _match.announceRounds,
+    );
+
+    if (generation != _roundStartGeneration) {
+      return;
+    }
+    if (!_match.announceRounds) {
+      return;
+    }
+    if (state is RunPausedState ||
+        state is RunStoppedState ||
+        state is RunFinishedState ||
+        state is RunIdleState) {
+      return;
+    }
+    if (_phaseOf(state) != RunPhase.work || _roundIndexOf(state) != roundIndex) {
+      return;
+    }
+
+    await _ttsService.announceRound(
+      roundNumber: roundIndex + 1,
+      isLast: isLast,
+      gender: _match.ttsVoiceGender,
+    );
   }
 
   void _playRoundEndCue() {
     unawaited(_audioService.playRoundEnd(_match.roundEndSoundAsset));
+  }
+
+  void _stopAnnouncement() {
+    _roundStartGeneration++;
+    unawaited(_ttsService.stop());
   }
 
   void _playWarningCueIfNeeded(RunRunningState previous, RunRunningState next) {
@@ -178,6 +223,7 @@ class RunBloc extends Bloc<RunEvent, RunState> {
     if (current is! RunRunningState) return;
 
     _stopTicker();
+    _stopAnnouncement();
     emit(
       RunPausedState(
         roundIndex: current.roundIndex,
@@ -207,6 +253,7 @@ class RunBloc extends Bloc<RunEvent, RunState> {
 
   void _onStop(RunStopEvent event, Emitter<RunState> emit) {
     _stopTicker();
+    _stopAnnouncement();
     MatchBackgroundService.stop();
     emit(const RunStoppedState());
   }
@@ -282,6 +329,7 @@ class RunBloc extends Bloc<RunEvent, RunState> {
     }
 
     _warningCueKey = null;
+    _stopAnnouncement();
     _playRoundEndCue();
 
     final isLastRound = roundIndex >= _match.roundsCount - 1;
@@ -373,6 +421,7 @@ class RunBloc extends Bloc<RunEvent, RunState> {
     }
 
     if (phase == RunPhase.work) {
+      _stopAnnouncement();
       _playRoundEndCue();
       _startNextRoundWork(emit, stayPaused: stayPaused);
       return;
@@ -406,7 +455,9 @@ class RunBloc extends Bloc<RunEvent, RunState> {
   @override
   Future<void> close() async {
     _stopTicker();
+    _stopAnnouncement();
     MatchBackgroundService.stop();
+    await _ttsService.dispose();
     await _audioService.dispose();
     return super.close();
   }

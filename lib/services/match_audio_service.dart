@@ -7,8 +7,12 @@ class MatchAudioService {
   final AudioPlayer _roundEndPlayer = AudioPlayer();
   final AudioPlayer _warningPlayer = AudioPlayer();
 
-  Future<void> playRoundStart(String assetPath) {
-    return _play(_roundStartPlayer, assetPath);
+  Future<void> playRoundStart(String assetPath, {bool waitForCompletion = false}) {
+    return _play(
+      _roundStartPlayer,
+      assetPath,
+      waitForCompletion: waitForCompletion,
+    );
   }
 
   Future<void> playRoundEnd(String assetPath) {
@@ -17,6 +21,10 @@ class MatchAudioService {
 
   Future<void> playWarning(String assetPath) {
     return _play(_warningPlayer, assetPath);
+  }
+
+  Future<void> stopRoundStart() {
+    return _roundStartPlayer.stop();
   }
 
   Future<void> dispose() async {
@@ -33,16 +41,32 @@ class MatchAudioService {
     return assetPath;
   }
 
-  Future<void> _play(AudioPlayer player, String assetPath) async {
+  Future<void> _play(
+    AudioPlayer player,
+    String assetPath, {
+    bool waitForCompletion = false,
+  }) async {
     try {
       await player.stop();
+      final completion = waitForCompletion
+          ? player.onPlayerComplete.first
+          : null;
+
       if (kIsWeb) {
         await player.play(AssetSource(_assetSourcePath(assetPath)));
+      } else {
+        final audioData = await rootBundle.load(assetPath);
+        await player.play(BytesSource(audioData.buffer.asUint8List()));
+      }
+
+      if (completion == null) {
         return;
       }
 
-      final audioData = await rootBundle.load(assetPath);
-      await player.play(BytesSource(audioData.buffer.asUint8List()));
+      await completion.timeout(
+        const Duration(seconds: 5),
+        onTimeout: () {},
+      );
     } catch (error) {
       debugPrint('Unable to play asset "$assetPath": $error');
     }

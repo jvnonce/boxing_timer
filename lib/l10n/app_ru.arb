@@ -2,7 +2,7 @@
   "@@locale": "ru",
   "appTitle": "Таймер боксёра",
   "timers": "Таймеры",
-  "wait": "Приготовьтесь: {time}",
+  "wait": "Готовьтесь: {time}",
   "run": "Запуск",
   "start": "Старт",
   "pause": "Пауза",
@@ -47,5 +47,11 @@
   "notificationChannelDescription": "Статус раунда, пока идёт матч",
   "notificationInitialTitle": "Таймер боксёра",
   "notificationInitialContent": "Матч не запущен",
-  "defaultMatchName": "Таймер боксёра"
+  "defaultMatchName": "Таймер боксёра",
+  "announceRounds": "Озвучивать раунды",
+  "ttsVoiceGender": "Голос",
+  "ttsVoiceFemale": "Женский",
+  "ttsVoiceMale": "Мужской",
+  "ttsRound": "Раунд {number}",
+  "ttsLastRound": "Раунд {number}. Последний."
 }

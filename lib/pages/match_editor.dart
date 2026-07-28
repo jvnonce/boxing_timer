@@ -1,6 +1,8 @@
 import 'package:boxing_timer/l10n/l10n.dart';
 import 'package:boxing_timer/models/match.dart';
 import 'package:boxing_timer/models/round.dart';
+import 'package:boxing_timer/models/tts_voice_gender.dart';
+import 'package:boxing_timer/utils.dart';
 import 'package:flutter/material.dart';
 
 class MatchEditorPage extends StatefulWidget {
@@ -51,6 +53,8 @@ class _MatchEditorPageState extends State<MatchEditorPage> {
   late String _roundEndSoundAsset;
   late String _warningSoundAsset;
   late bool _keepScreenOn;
+  late bool _announceRounds;
+  late TtsVoiceGender _ttsVoiceGender;
 
   bool get _isEditing => widget.initialMatch != null;
 
@@ -86,6 +90,8 @@ class _MatchEditorPageState extends State<MatchEditorPage> {
         match?.roundEndSoundAsset ?? Match.defaultRoundSignalSound;
     _warningSoundAsset = match?.warningSoundAsset ?? Match.defaultWarningSound;
     _keepScreenOn = match?.keepScreenOn ?? true;
+    _announceRounds = match?.announceRounds ?? false;
+    _ttsVoiceGender = match?.ttsVoiceGender ?? TtsVoiceGender.female;
   }
 
   @override
@@ -198,6 +204,8 @@ class _MatchEditorPageState extends State<MatchEditorPage> {
       roundEndSoundAsset: _roundEndSoundAsset,
       warningSoundAsset: _warningSoundAsset,
       keepScreenOn: _keepScreenOn,
+      announceRounds: isTtsSupported && _announceRounds,
+      ttsVoiceGender: _ttsVoiceGender,
       rounds: List<Round>.generate(
         roundsCount,
         (_) => Round(work: work, rest: rest),
@@ -281,6 +289,7 @@ class _MatchEditorPageState extends State<MatchEditorPage> {
               ),
               const SizedBox(height: 12),
               SwitchListTile(
+                contentPadding: EdgeInsets.zero,
                 title: Text(l10n.keepScreenOn),
                 value: _keepScreenOn,
                 onChanged: (value) {
@@ -289,6 +298,43 @@ class _MatchEditorPageState extends State<MatchEditorPage> {
                   });
                 },
               ),
+              if (isTtsSupported) ...[
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(l10n.announceRounds),
+                  value: _announceRounds,
+                  onChanged: (value) {
+                    setState(() {
+                      _announceRounds = value;
+                    });
+                  },
+                ),
+                if (_announceRounds) ...[
+                  const SizedBox(height: 4),
+                  DropdownButtonFormField<TtsVoiceGender>(
+                    initialValue: _ttsVoiceGender,
+                    decoration: InputDecoration(labelText: l10n.ttsVoiceGender),
+                    items: [
+                      DropdownMenuItem(
+                        value: TtsVoiceGender.female,
+                        child: Text(l10n.ttsVoiceFemale),
+                      ),
+                      DropdownMenuItem(
+                        value: TtsVoiceGender.male,
+                        child: Text(l10n.ttsVoiceMale),
+                      ),
+                    ],
+                    onChanged: (value) {
+                      if (value == null) {
+                        return;
+                      }
+                      setState(() {
+                        _ttsVoiceGender = value;
+                      });
+                    },
+                  ),
+                ],
+              ],
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
                 initialValue: _imageAsset,
@@ -313,7 +359,8 @@ class _MatchEditorPageState extends State<MatchEditorPage> {
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
                 initialValue: _roundStartSoundAsset,
-                decoration: InputDecoration(labelText: l10n.fieldRoundStartSound),
+                decoration:
+                    InputDecoration(labelText: l10n.fieldRoundStartSound),
                 items: MatchEditorPage.soundAssets
                     .map(
                       (asset) => DropdownMenuItem<String>(
