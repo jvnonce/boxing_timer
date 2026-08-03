@@ -1,102 +1,45 @@
 import 'dart:async';
-import 'dart:ui';
 
-import 'package:boxing_timer/l10n/app_localizations.dart';
+import 'package:boxing_timer/services/match_timer_runner.dart';
 import 'package:boxing_timer/utils.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-@pragma('vm:entry-point')
-Future<bool> _matchBackgroundOnIosBackground(ServiceInstance service) async {
-  WidgetsFlutterBinding.ensureInitialized();
-  return true;
-}
-
-@pragma('vm:entry-point')
-void _matchBackgroundOnStart(ServiceInstance service) {
-  StreamSubscription<Object?>? updateSubscription;
-  StreamSubscription<Object?>? stopSubscription;
-
-  updateSubscription = service.on(MatchBackgroundService._updateAction).listen((event) {
-    final l10n = _matchBackgroundLookupL10n();
-    final matchName = event?['matchName'] as String? ?? l10n.defaultMatchName;
-    final phaseLabel = event?['phaseLabel'] as String? ?? 'work';
-    final remainingSeconds = event?['remainingSeconds'] as int? ?? 0;
-    final roundIndex = event?['roundIndex'] as int? ?? 0;
-    final roundsCount = event?['roundsCount'] as int? ?? 0;
-    final isPaused = event?['isPaused'] as bool? ?? false;
-
-    final roundLabel = roundsCount > 0
-        ? l10n.round(roundIndex + 1, roundsCount)
-        : l10n.run;
-    final time = _matchBackgroundFormatTime(remainingSeconds);
-    final phaseTimeLabel = switch (phaseLabel) {
-      'prepare' => l10n.prepareTime(time),
-      'rest' => l10n.restTime(time),
-      _ => l10n.workTime(time),
-    };
-    final pausedLabel = isPaused ? ' | ${l10n.pause}' : '';
-    final content = '$roundLabel | $phaseTimeLabel$pausedLabel';
-
-    if (service is AndroidServiceInstance) {
-      service.setForegroundNotificationInfo(
-        title: matchName,
-        content: content,
-      );
-    }
-  });
-
-  stopSubscription = service.on(MatchBackgroundService._stopAction).listen((event) async {
-    await updateSubscription?.cancel();
-    await stopSubscription?.cancel();
-    service.stopSelf();
-  });
-}
-
-AppLocalizations _matchBackgroundLookupL10n() {
-  final locale = PlatformDispatcher.instance.locale;
-
-  try {
-    return lookupAppLocalizations(locale);
-  } catch (_) {
-    return lookupAppLocalizations(const Locale('en'));
-  }
-}
-
-String _matchBackgroundFormatTime(int totalSeconds) {
-  if (totalSeconds < 60) {
-    return totalSeconds.toString();
-  }
-
-  final minutes = totalSeconds ~/ 60;
-  final seconds = totalSeconds % 60;
-  return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
-}
-
+/// Configures and gates the Android/iOS foreground service host for the timer.
 class MatchBackgroundService {
   static const String notificationChannelId = 'boxer_timer_match';
   static const int notificationId = 12001;
   static const String iosTaskIdentifier =
       'com.github.jvnonce.boxing_timer.background.refresh';
 
-  static const String _updateAction = 'update_match_status';
-  static const String _stopAction = 'stop_match_status';
-
   static bool get _isSupportedPlatform => isMobileNative;
 
   static bool _configured = false;
 
-  /// Whether the foreground/background status service may run.
-  /// Without notification permission the timer stays UI-only.
-  static Future<bool> _canUseService() async {
+  static Future<bool> _notificationsAllowed() async {
+    if (!_isSupportedPlatform) {
+      return false;
+    }
+    return (await Permission.notification.status).isGranted;
+  }
+
+  /// Whether the match timer may run inside the FGS isolate.
+  static Future<bool> ensureReadyForMatch() async {
     if (!_isSupportedPlatform) {
       return false;
     }
 
-    return (await Permission.notification.status).isGranted;
+    await preparePermissions();
+    if (!await _notificationsAllowed()) {
+      return false;
+    }
+
+    if (!_configured) {
+      await initialize();
+    }
+    return _configured;
   }
 
   static Future<void> initialize() async {
@@ -104,8 +47,7 @@ class MatchBackgroundService {
       return;
     }
 
-    // Configure only when notifications are allowed; otherwise stay widget-only.
-    if (!await _canUseService()) {
+    if (!await _notificationsAllowed()) {
       return;
     }
 
@@ -113,18 +55,18 @@ class MatchBackgroundService {
       await _ensureAndroidNotificationChannel();
     }
 
-    final l10n = _matchBackgroundLookupL10n();
+    final l10n = matchTimerLookupL10n();
     final service = FlutterBackgroundService();
 
     await service.configure(
       iosConfiguration: IosConfiguration(
         autoStart: false,
-        onForeground: _matchBackgroundOnStart,
-        onBackground: _matchBackgroundOnIosBackground,
+        onForeground: matchTimerServiceMain,
+        onBackground: matchTimerIosBackground,
       ),
       androidConfiguration: AndroidConfiguration(
         autoStart: false,
-        onStart: _matchBackgroundOnStart,
+        onStart: matchTimerServiceMain,
         isForegroundMode: true,
         autoStartOnBoot: false,
         notificationChannelId: notificationChannelId,
@@ -137,7 +79,7 @@ class MatchBackgroundService {
   }
 
   static Future<void> _ensureAndroidNotificationChannel() async {
-    final l10n = _matchBackgroundLookupL10n();
+    final l10n = matchTimerLookupL10n();
     final channel = AndroidNotificationChannel(
       notificationChannelId,
       l10n.notificationChannelName,
@@ -148,16 +90,24 @@ class MatchBackgroundService {
     final plugin = FlutterLocalNotificationsPlugin();
     await plugin
         .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
+          AndroidFlutterLocalNotificationsPlugin
+        >()
         ?.createNotificationChannel(channel);
   }
 
-  /// Request notification permission once after the first frame (Android/iOS).
+  /// Notification + battery optimization prompts (Android/iOS).
   static Future<void> preparePermissions() async {
     if (!_isSupportedPlatform) {
       return;
     }
 
+    await _requestNotificationPermission();
+    if (isAndroidNative) {
+      await _requestIgnoreBatteryOptimizations();
+    }
+  }
+
+  static Future<void> _requestNotificationPermission() async {
     var status = await Permission.notification.status;
     if (status.isGranted || !status.isDenied) {
       return;
@@ -166,56 +116,27 @@ class MatchBackgroundService {
     try {
       await Permission.notification.request();
     } on PlatformException {
-      // Dialog already open or request in progress — [showStatus] re-checks.
+      // Dialog already open or request in progress.
     }
   }
 
-  static Future<void> showStatus({
-    required String matchName,
-    required String phaseLabel,
-    required int remainingSeconds,
-    required int roundIndex,
-    required int roundsCount,
-    required bool isPaused,
-  }) async {
-    if (!_isSupportedPlatform) {
+  static Future<void> _requestIgnoreBatteryOptimizations() async {
+    final status = await Permission.ignoreBatteryOptimizations.status;
+    if (status.isGranted || status.isPermanentlyDenied) {
       return;
     }
 
-    // No permission → do not start the service; timer continues in the widget.
-    if (!await _canUseService()) {
-      return;
+    try {
+      await Permission.ignoreBatteryOptimizations.request();
+    } on PlatformException {
+      // OEM may block the prompt.
     }
-
-    // Permission may have been granted after startup — configure lazily.
-    if (!_configured) {
-      await initialize();
-      if (!_configured) {
-        return;
-      }
-    }
-
-    final service = FlutterBackgroundService();
-    if (!(await service.isRunning())) {
-      await service.startService();
-      await Future<void>.delayed(const Duration(milliseconds: 250));
-    }
-
-    service.invoke(_updateAction, {
-      'matchName': matchName,
-      'phaseLabel': phaseLabel,
-      'remainingSeconds': remainingSeconds,
-      'roundIndex': roundIndex,
-      'roundsCount': roundsCount,
-      'isPaused': isPaused,
-    });
   }
 
   static void stop() {
     if (!_isSupportedPlatform) {
       return;
     }
-
     unawaited(_stopIfRunning());
   }
 
@@ -224,7 +145,6 @@ class MatchBackgroundService {
     if (!(await service.isRunning())) {
       return;
     }
-
-    service.invoke(_stopAction);
+    service.invoke(MatchTimerCommands.stop);
   }
 }

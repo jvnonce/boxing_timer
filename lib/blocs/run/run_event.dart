@@ -21,14 +21,16 @@ final class RunStopEvent extends RunEvent {
   const RunStopEvent();
 }
 
-final class RunTickEvent extends RunEvent {
-  const RunTickEvent();
-}
-
 final class RunForceRestEvent extends RunEvent {
   const RunForceRestEvent();
 }
 
 final class RunForceNextRoundEvent extends RunEvent {
   const RunForceNextRoundEvent();
+}
+
+final class RunSnapshotEvent extends RunEvent {
+  const RunSnapshotEvent(this.snapshot);
+
+  final MatchRunSnapshot snapshot;
 }
