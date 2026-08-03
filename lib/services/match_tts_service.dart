@@ -24,11 +24,13 @@ class MatchTtsService {
     try {
       await _ensureReady(gender);
       final tts = _tts;
-      if (tts == null) {
+      if (tts == null || _appliedLanguage == null) {
         return;
       }
 
-      final l10n = _lookupL10n();
+      // Speak in the language of the selected TTS engine, not only UI locale.
+      // Avoids Russian text through an English Samsung voice (garbled digits).
+      final l10n = _l10nForSpeechLanguage(_appliedLanguage!);
       final text = isLast
           ? l10n.ttsLastRound(roundNumber)
           : l10n.ttsRound(roundNumber);
@@ -75,7 +77,6 @@ class MatchTtsService {
     _tts = tts;
 
     final locale = PlatformDispatcher.instance.locale;
-    final language = _languageTag(locale);
 
     if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS) {
       await tts.setSharedInstance(true);
@@ -91,26 +92,47 @@ class MatchTtsService {
     }
 
     await tts.setVolume(1.0);
-    await tts.setSpeechRate(0.5);
+    // Samsung/Android often treat 0.5 as very slow; keep near default.
+    await tts.setSpeechRate(
+      !kIsWeb && defaultTargetPlatform == TargetPlatform.android ? 0.45 : 0.5,
+    );
     await tts.awaitSpeakCompletion(false);
 
-    final languageAvailable = await tts.isLanguageAvailable(language);
-    if (languageAvailable == true) {
-      await tts.setLanguage(language);
-      _appliedLanguage = language;
-    } else {
-      const fallback = 'en-US';
-      await tts.setLanguage(fallback);
-      _appliedLanguage = fallback;
+    final language = await _resolveLanguage(tts, locale);
+    await tts.setLanguage(language);
+    _appliedLanguage = language;
+
+    await _applyVoice(tts, gender, language);
+  }
+
+  Future<String> _resolveLanguage(FlutterTts tts, Locale locale) async {
+    for (final tag in _localeCandidates(locale)) {
+      final available = await tts.isLanguageAvailable(tag);
+      if (available != true) {
+        continue;
+      }
+
+      if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
+        try {
+          final installed = await tts.isLanguageInstalled(tag);
+          if (installed == false) {
+            continue;
+          }
+        } catch (_) {
+          // Older engines may not implement isLanguageInstalled.
+        }
+      }
+
+      return tag;
     }
 
-    await _applyVoice(tts, gender, locale);
+    return 'en-US';
   }
 
   Future<void> _applyVoice(
     FlutterTts tts,
     TtsVoiceGender gender,
-    Locale locale,
+    String language,
   ) async {
     final voicesRaw = await tts.getVoices;
     if (voicesRaw is! List) {
@@ -127,53 +149,65 @@ class MatchTtsService {
         )
         .toList();
 
-    final preferred = _pickVoice(voices, gender, locale);
+    final preferred = _pickVoice(voices, gender, language);
     if (preferred != null) {
+      final voiceLocale = preferred['locale'] ?? language;
       final payload = <String, String>{
         'name': preferred['name'] ?? '',
-        'locale': preferred['locale'] ?? _appliedLanguage ?? 'en-US',
+        'locale': voiceLocale,
       };
       final identifier = preferred['identifier'];
       if (identifier != null && identifier.isNotEmpty) {
         payload['identifier'] = identifier;
       }
       await tts.setVoice(payload);
-      await tts.setPitch(1.0);
+      // Samsung often resets language when setVoice is applied.
+      await tts.setLanguage(_normalizeLanguageTag(voiceLocale));
+      _appliedLanguage = _normalizeLanguageTag(voiceLocale);
+      await tts.setPitch(
+        _voiceHasExplicitGender(preferred) ? 1.0 : _pitchFor(gender),
+      );
       return;
     }
 
     await tts.setPitch(_pitchFor(gender));
   }
 
+  /// Locale first, gender only within that locale. Never steal an en voice for ru text.
   Map<String, String>? _pickVoice(
     List<Map<String, String>> voices,
     TtsVoiceGender gender,
-    Locale locale,
+    String language,
   ) {
-    final localeTags = _localeCandidates(locale);
+    final localeTags = _localeCandidatesForTag(language);
+    final inLocale = voices
+        .where(
+          (voice) => localeTags.any(
+            (tag) => _localeMatches(voice['locale'], tag),
+          ),
+        )
+        .toList();
 
-    Map<String, String>? firstWhere(
-      bool Function(Map<String, String> voice) test,
-    ) {
-      for (final tag in localeTags) {
-        for (final voice in voices) {
-          if (_localeMatches(voice['locale'], tag) && test(voice)) {
-            return voice;
-          }
-        }
-      }
-      for (final voice in voices) {
-        if (test(voice)) {
-          return voice;
-        }
-      }
+    if (inLocale.isEmpty) {
       return null;
     }
 
-    return switch (gender) {
-      TtsVoiceGender.male => firstWhere(_looksMale),
-      TtsVoiceGender.female => firstWhere(_looksFemale),
+    final genderTest = switch (gender) {
+      TtsVoiceGender.male => _looksMale,
+      TtsVoiceGender.female => _looksFemale,
     };
+
+    for (final voice in inLocale) {
+      if (genderTest(voice)) {
+        return voice;
+      }
+    }
+
+    return inLocale.first;
+  }
+
+  bool _voiceHasExplicitGender(Map<String, String> voice) {
+    return _looksMale(voice) || _looksFemale(voice);
   }
 
   bool _looksMale(Map<String, String> voice) {
@@ -189,7 +223,10 @@ class MatchTtsService {
     if (name.contains('female')) {
       return false;
     }
-    return name.contains('male') || name.contains('#male');
+    return name.contains('male') ||
+        name.contains('#male') ||
+        name.contains('-rum-') || // Google ru male network/local patterns
+        name.contains('x-rum');
   }
 
   bool _looksFemale(Map<String, String> voice) {
@@ -202,30 +239,54 @@ class MatchTtsService {
     }
 
     final name = (voice['name'] ?? '').toLowerCase();
-    return name.contains('female') || name.contains('#female');
+    return name.contains('female') ||
+        name.contains('#female') ||
+        name.contains('-ruf-') ||
+        name.contains('x-ruf');
   }
 
   bool _localeMatches(String? voiceLocale, String tag) {
     if (voiceLocale == null || voiceLocale.isEmpty) {
       return false;
     }
-    final normalized = voiceLocale.replaceAll('_', '-').toLowerCase();
-    final wanted = tag.replaceAll('_', '-').toLowerCase();
-    return normalized == wanted || normalized.startsWith('$wanted-');
+    final normalized = _normalizeLanguageTag(voiceLocale).toLowerCase();
+    final wanted = _normalizeLanguageTag(tag).toLowerCase();
+    if (normalized == wanted) {
+      return true;
+    }
+    final normalizedLang = normalized.split('-').first;
+    final wantedLang = wanted.split('-').first;
+    if (normalizedLang == wantedLang) {
+      return true;
+    }
+    return normalized.startsWith('$wanted-') || wanted.startsWith('$normalized-');
+  }
+
+  String _normalizeLanguageTag(String tag) {
+    return tag.replaceAll('_', '-');
   }
 
   List<String> _localeCandidates(Locale locale) {
-    final language = locale.languageCode;
-    final country = locale.countryCode;
-    if (country != null && country.isNotEmpty) {
-      return <String>['$language-$country', language];
+    return _localeCandidatesForTag(_languageTag(locale));
+  }
+
+  List<String> _localeCandidatesForTag(String languageTag) {
+    final normalized = _normalizeLanguageTag(languageTag);
+    final parts = normalized.split('-');
+    final language = parts.first.toLowerCase();
+    final candidates = <String>[normalized];
+    if (parts.length > 1) {
+      candidates.add(language);
     }
-    return switch (language) {
-      'ru' => <String>['ru-RU', 'ru'],
-      'es' => <String>['es-ES', 'es'],
-      'en' => <String>['en-US', 'en-GB', 'en'],
-      _ => <String>[language, 'en-US'],
-    };
+    switch (language) {
+      case 'ru':
+        candidates.addAll(const ['ru-RU', 'ru']);
+      case 'es':
+        candidates.addAll(const ['es-ES', 'es-MX', 'es']);
+      case 'en':
+        candidates.addAll(const ['en-US', 'en-GB', 'en']);
+    }
+    return candidates.toSet().toList();
   }
 
   String _languageTag(Locale locale) {
@@ -248,9 +309,10 @@ class MatchTtsService {
     };
   }
 
-  AppLocalizations _lookupL10n() {
+  AppLocalizations _l10nForSpeechLanguage(String languageTag) {
+    final code = _normalizeLanguageTag(languageTag).split('-').first;
     try {
-      return lookupAppLocalizations(PlatformDispatcher.instance.locale);
+      return lookupAppLocalizations(Locale(code));
     } catch (_) {
       return lookupAppLocalizations(const Locale('en'));
     }
